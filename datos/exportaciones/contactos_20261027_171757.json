@@ -1,0 +1,62 @@
+{
+  "generado": "2026-10-27T17:18:01",
+  "total": 8,
+  "contactos": [
+    {
+      "id": 1,
+      "nombre": "GeraXdo Rivera",
+      "telefono": "3180-3826",
+      "correo": "lgtrivera@gmail.com",
+      "ciudad": "Guatemala"
+    },
+    {
+      "id": 2,
+      "nombre": "Ana María López",
+      "telefono": "5512-3456",
+      "correo": "ana.lopez@correo.com",
+      "ciudad": "Quetzaltenango"
+    },
+    {
+      "id": 3,
+      "nombre": "Carlos Pérez",
+      "telefono": "5523-9981",
+      "correo": "cperez@correo.com",
+      "ciudad": "Guatemala"
+    },
+    {
+      "id": 4,
+      "nombre": "María José Castillo",
+      "telefono": "5004-7078",
+      "correo": "mjcastillo@correo.com",
+      "ciudad": "Peten"
+    },
+    {
+      "id": 5,
+      "nombre": "Luis Fernando Ixcoy",
+      "telefono": "5034-1122",
+      "correo": "lixcoy@correo.com",
+      "ciudad": "Totonicapán"
+    },
+    {
+      "id": 6,
+      "nombre": "Diego Mejía",
+      "telefono": "4177-3300",
+      "correo": "dmejia@correo.com",
+      "ciudad": "Mazatenango"
+    },
+    {
+      "id": 7,
+      "nombre": "Valeria Estrada",
+      "telefono": "5566-7821",
+      "correo": "vestrada@correo.com",
+      "ciudad": "Cobán"
+    },
+    {
+      "id": 8,
+      "nombre": "José Miguel Tzoc",
+      "telefono": "4099-5512",
+      "correo": "jmtzoc@correo.com",
+      "ciudad": "Xela"
+    }
+  ]
+}
