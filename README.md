@@ -19,3 +19,20 @@ accede a ellos con seek() / tell()...
 | ciudad | 18 | 81 - 98 |
 | fin de línea (\n) | 1 | 99 |
 | **Total** | **100** | |
+
+
+
+## Uso
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install fpdf2
+python3 app.py
+```
+
+Los datos se guardan en la carpeta `datos/`: `contactos.dat` (registros de 100 bytes),
+`indice.json` (índice id -> registro), `contactos.sha256`,
+`exportaciones/` (JSON y PDF) y `respaldos/` (ZIP).
+
+Pruebas automáticas: `python3 -m unittest discover -s tests`
