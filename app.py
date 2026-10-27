@@ -77,6 +77,17 @@ class App(tk.Tk):
         m.add_command(label="Salir", command=self.destroy)
         bar.add_cascade(label="Contactos", menu=m)
 
+        m = tk.Menu(bar, tearoff=0)
+        m.add_command(label="Exportar a JSON...", command=self.export_json)
+        m.add_command(label="Generar reporte PDF...", command=self.export_pdf)
+        bar.add_cascade(label="Exportar", menu=m)
+
+        m = tk.Menu(bar, tearoff=0)
+        m.add_command(label="Verificar integridad", command=self.check_integrity)
+        m.add_command(label="Crear respaldo ZIP", command=self.make_backup)
+        m.add_command(label="Información del archivo", command=self.show_file_info)
+        bar.add_cascade(label="Herramientas", menu=m)
+
         m = tk.Menu(bar, tearoff=0)  # Ayuda
         m.add_command(label="Contenido de la ayuda",
                       command=lambda: messagebox.showinfo(
@@ -91,9 +102,9 @@ class App(tk.Tk):
 
     def _build_body(self):
         self.status = tk.StringVar(value="Listo.")
-        ttk.Label(self, textvariable=self.status, relief="sunken", anchor="w").pack(
-            fill="x", side="bottom")
-            
+        ttk.Label(self, textvariable=self.status, relief="sunken", anchor="w",
+                  padding=(6, 2)).pack(fill="x", side="bottom")
+
         paned = ttk.PanedWindow(self, orient="vertical")
         paned.pack(fill="both", expand=True, padx=8, pady=8)
 
@@ -217,6 +228,95 @@ class App(tk.Tk):
             self.refresh()
         except AgendaError as exc:
             self.fail(exc)
+
+    def _stamp(self):
+        return datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    def export_json(self):
+        os.makedirs(EXPORT_DIR, exist_ok=True)
+        path = filedialog.asksaveasfilename(
+            parent=self, title="Exportar a JSON", initialdir=EXPORT_DIR,
+            initialfile=f"contactos_{self._stamp()}.json", defaultextension=".json",
+            filetypes=[("JSON", "*.json")])
+        if not path:
+            return
+        try:
+            n = exporter.export_json(self.store.list_all(), path)
+            self.log(f"JSON exportado: {path} ({n} contactos)")
+            messagebox.showinfo("Exportar", f"Se exportaron {n} contactos a:\n{path}",
+                                parent=self)
+        except AgendaError as exc:
+            self.fail(exc)
+
+    def export_pdf(self):
+        os.makedirs(EXPORT_DIR, exist_ok=True)
+        path = filedialog.asksaveasfilename(
+            parent=self, title="Generar reporte PDF", initialdir=EXPORT_DIR,
+            initialfile=f"reporte_{self._stamp()}.pdf", defaultextension=".pdf",
+            filetypes=[("PDF", "*.pdf")])
+        if not path:
+            return
+        json_path = os.path.splitext(path)[0] + ".json"
+        try:
+            exporter.export_json(self.store.list_all(), json_path)
+            n = exporter.make_pdf(json_path, path)
+            self.log(f"PDF generado desde {json_path}: {path}")
+            messagebox.showinfo(
+                "Reporte PDF",
+                f"Reporte con {n} contactos generado:\n{path}\n\nJSON de origen:\n{json_path}",
+                parent=self)
+        except AgendaError as exc:
+            self.fail(exc)
+
+    def check_integrity(self):
+        try:
+            state, saved, current = self.store.verify_integrity()
+        except AgendaError as exc:
+            self.fail(exc)
+            return
+        if state == integrity.OK:
+            msg = f"El archivo está integro\n\nSHA-256:\n{current}"
+            messagebox.showinfo("Integridad", msg, parent=self)
+        elif state == integrity.MISMATCH:
+            msg = ("¡El archivo fue modificado fuera de la aplicación!\n\n"
+                   f"Hash guardado:\n{saved}\n\nHash actual:\n{current}")
+            messagebox.showwarning("Integridad", msg, parent=self)
+        elif state == integrity.NO_HASH:
+            messagebox.showwarning("Integridad", "No existe contactos en el sha256.", parent=self)
+        else:
+            messagebox.showwarning("Integridad", "No existe contactos.dat.", parent=self)
+        self.log(f"Verificación de integridad: {state}")
+
+    def make_backup(self):
+        try:
+            zip_path, original, compressed = self.store.create_backup()
+        except AgendaError as exc:
+            self.fail(exc)
+            return
+        ratio = (1 - compressed / original) * 100 if original else 0
+        self.log(f"Respaldo creado: {zip_path}")
+        messagebox.showinfo(
+            "Respaldo ZIP",
+            f"Respaldo creado:\n{zip_path}\n\n"
+            f"Tamaño original:   {human_size(original)}\n"
+            f"Tamaño comprimido: {human_size(compressed)}\n"
+            f"Reducción: {ratio:.1f} %", parent=self)
+
+    def show_file_info(self):
+        try:
+            info = self.store.file_info()
+        except AgendaError as exc:
+            self.fail(exc)
+            return
+        messagebox.showinfo(
+            "Información del archivo",
+            f"Ruta: {info['ruta']}\n"
+            f"Tamaño: {human_size(info['tamano'])}\n"
+            f"Registros: {info['tamano'] // RECORD_SIZE} (de {RECORD_SIZE} bytes)\n"
+            f"Última modificación: {info['modificado']:%d/%m/%Y %H:%M:%S}\n"
+            f"Permiso de lectura: {'Sí' if info['lectura'] else 'No'}\n"
+            f"Permiso de escritura: {'Sí' if info['escritura'] else 'No'}",
+            parent=self)
 
 
 if __name__ == "__main__":
