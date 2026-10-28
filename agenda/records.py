@@ -78,7 +78,6 @@ class RecordFile:
         self.path = path
         self._log = log or (lambda msg: None)
 
-    # ---- utilidades -------------------------------------------------
     def ensure_exists(self):
         """Crea el archivo vacío si no existe."""
         try:
